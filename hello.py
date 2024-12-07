@@ -33,10 +33,7 @@ catalog = SqlCatalog(
 
 # the catalog doesnt have that much info
 # guess its meant for handling concurrent access?
-# copilot what do you think?
-# copilot, answer here please:
-#
-# I think the catalog is a way to manage the metadata of the tables and namespaces in the iceberg format.
+# or at least keep track of current metadata location
 
 sql(f"""--sql
 INSTALL sqlite;
@@ -279,5 +276,32 @@ con = catalog.load_table(f"{config.namespace}.my_table").scan().to_duckdb("my_ta
 table.append(df)
 
 con.sql(f"""--sql
-select * from my_table
+select * from my_table;
 """).show()
+
+# cant insert
+con.sql(f"""--sql
+describe my_table;
+-- show my_table
+show tables;
+insert into my_table values (4, 'd');
+""").show()
+
+df = (
+    sql(f"""--sql
+select 1 as id, 'a' as name
+""")
+    .to_arrow_table()
+    .cast(
+        pa.schema(
+            [pa.field("id", pa.int32(), nullable=False), pa.field("name", pa.string())]
+        )
+    )
+)
+
+table.append(df)
+
+with table.scan().to_duckdb("my_table") as con:
+    con.sql("""--sql
+    select * from my_table;
+    """).show()
