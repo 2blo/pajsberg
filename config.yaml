@@ -1,0 +1,4 @@
+warehouse: /tmp/warehouse
+catalog_file: pyiceberg_catalog
+namespace: my_namespace
+catalog_name: my_catalog
